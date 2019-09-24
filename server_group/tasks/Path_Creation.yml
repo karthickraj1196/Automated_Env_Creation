@@ -1,0 +1,48 @@
+---
+- name: Path Creation
+  block:
+    - name: heapdump_path_creation
+      file:
+        path: /opt/{{ Instance_Name }}/hc1/domain/heapdump/{{ Nodename }}
+        state: directory
+        owner: jboss
+        group: jboss
+        mode: 0755
+    - name: Zorka_home creation
+      file:
+        path: /opt/Solartis_Monitoring/Zorka_Agent/{{ Nodename }}
+        state: directory
+        owner: jboss
+        group: jboss
+        mode: 0755
+
+  rescue:
+    - name: heapdump_rescue
+      shell: rm -rf /opt/{{ Instance_Name }}/hc1/domain/heapdump/{{ Nodename }}
+    - name: zorka_home rescue
+      shell: rm -rf /opt/Solartis_Monitoring/Zorka_Agent/{{ Nodename }}
+
+#- name: Changing Permission for writing acces_conf file
+#  shell: chmod 777 /opt/{{ Instance_Name }}/jws/httpd/solartis.conf/{{ TIER_NAME }}.conf.d/
+
+- name: Copy Access Conf file
+  copy:
+    src: /opt/QA_Migration/ansible/roles/server_group/files/Access.conf
+    dest: /opt/{{ Instance_Name }}/jws/httpd/solartis.conf/{{ TIER_NAME }}.conf.d/{{ Log_Format|lower }}_access.conf
+    owner: apache
+    group: apache
+    mode: 0755
+
+- name: Copy Zorka Agent
+  copy:
+    src: /opt/QA_Migration/ansible/roles/server_group/files/agent
+    dest: /opt/Solartis_Monitoring/Zorka_Agent/{{ Nodename }}
+    owner: jboss
+    group: jboss
+    mode: 0755
+
+- name: Zorka Configuration
+  template:
+    src: zorka.properties.j2
+    dest: /opt/Solartis_Monitoring/Zorka_Agent/{{ Nodename }}/agent/zorka.properties
+     

@@ -1,0 +1,47 @@
+Listen {{ JWS_IP }}:443
+Listen {{ JWS_IP }}:80
+
+<VirtualHost {{ JWS_IP }}:443>
+        ServerName {{ Domain_Name }}
+        ErrorLog "|/opt/{{ Instance_Name }}/jws/httpd/sbin/rotatelogs -l /opt/{{ Instance_Name }}/jws/httpd/logs/{{ Log_Format | upper }}_{{ TIER_NAME | upper }}_Https_Log.%Y.%m.%d 86400"
+        LogLevel info
+        LogFormat "%T %h %l %u %t %h \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\" %{JSESSIONID}C %{Set-Cookie}o %{BALANCER_SESSION_STICKY}e %{BALANCER_SESSION_ROUTE}e %{BALANCER_WORKER_ROUTE}e %{BALANCER_ROUTE_CHANGED}e" {{ Log_Format | lower }}{{ TIER_NAME }}https
+        CustomLog "|/opt/{{ Instance_Name }}/jws/httpd/sbin/rotatelogs -l /opt/{{ Instance_Name }}/jws/httpd/logs/{{ Log_Format | upper}}_{{ TIER_NAME | upper }}_Https_Cluster_Log.%Y.%m.%d 86400" {{ Log_Format | lower }}{{ TIER_NAME }}https
+
+        RewriteEngine On
+        RewriteCond %{REQUEST_METHOD} OPTIONS
+        RewriteRule ^(.*)$ $1 [R=200,L]
+        Header always set Access-Control-Allow-Origin "https://swagger.uat.solartis.net"
+        Header always set Access-Control-Allow-Methods "POST, GET, OPTIONS, DELETE, PUT"
+        Header always set Access-Control-Allow-Headers "x-requested-with, Content-Type, origin, authorization, accept, client-security-token, Token, EventName, EventVersion"
+
+        SSLEngine on
+        SSLProtocol -all +TLSv1 +TLSv1.1 +TLSv1.2
+#       SSLCipherSuite EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:ECDHE-RSA-AES128-SHA:DHE-RSA-AES128-GCM-SHA256:AES256+EDH:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GC$
+
+        SSLCertificateFile /opt/{{ Instance_Name }}/jws/httpd/certs/solartisnet2017.crt
+        SSLCertificateKeyFile /opt/{{ Instance_Name }}/jws/httpd/certs/solartisnet2015_pri.key
+        SSLCertificateChainFile /opt/{{ Instance_Name }}/jws/httpd/certs/gd_bundle-g2-g1.crt
+
+        <Location />
+                Require all granted
+        </Location>
+
+        ProxyPass / balancer://{{ Loadbalancer }}/ stickysession=JSESSIONID|jsessionid nofailover=On
+        ProxyPassReverse / balancer://{{ Loadbalancer }}/
+</VirtualHost>
+
+<VirtualHost {{ JWS_IP }}:80>
+        ServerName {{ Domain_Name }}
+        RewriteEngine On
+        RewriteCond %{HTTPS} off
+        RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
+        ErrorLog "|/opt/{{ Instance_Name }}/jws/httpd/sbin/rotatelogs -l /opt/{{ Instance_Name }}/jws/httpd/logs/{{ Log_Format | upper }}_{{ TIER_NAME | upper }}_Http_Log.%Y.%m.%d 86400"
+        LogLevel info
+        LogFormat "%T %h %l %u %t %h \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\" %{JSESSIONID}C %{Set-Cookie}o %{BALANCER_SESSION_STICKY}e %{BALANCER_SESSION_ROUTE}e %{BALANCER_WORKER_ROUTE}e %{BALANCER_ROUTE_CHANGED}e" {{ Log_Format | lower }}{{ TIER_NAME }}http
+        CustomLog "|/opt/{{ Instance_Name }}/jws/httpd/sbin/rotatelogs -l /opt/{{ Instance_Name }}/jws/httpd/logs/{{ Log_Format }}_{{ TIER_NAME | upper }}_Http_Cluster_Log.%Y.%m.%d 86400" {{ Log_Format | lower }}{{ TIER_NAME }}http
+
+        <Location />
+                Require all granted
+       </Location>
+</VirtualHost>

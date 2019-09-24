@@ -1,0 +1,11 @@
+---
+# vars file for server_group
+Instance_Name: Solartis_PL
+Server_Group: V6_2Test
+Heap_size: 1024m
+Groupname: test
+Loadbalancer: testkblb
+Nodename: 05_test1.1
+JWS_IP: 10.203.1.18
+Domain_Name: test.solartis.net
+JWS_Service: solartis-plkb-jws

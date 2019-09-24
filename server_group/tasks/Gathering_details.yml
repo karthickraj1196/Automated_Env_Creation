@@ -1,0 +1,72 @@
+#Gathering_Instance_Details
+---
+- name: Socket Group
+  shell: grep  "<socket-binding-group name" /opt/{{ Instance_Name }}/dc/domain/configuration/domain.xml | cut -d= -f2 | awk '{print $1}'
+  register: socket
+#- debug: var=socket_reg.stdout
+#- set_fact: socket_group=socket_reg.stdout
+#- debug: var={{ socket_group }} 
+- debug: 
+  var : socket.stdout 
+
+#- name: test_socket
+#  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller=10.203.34.60:19999 --user=starrkbdc --password=starrkbdc*1 --command="/server-group=test:add(profile="solartis-kb",socket-binding-group={{ socket_reg.stdout }})"
+#
+- name: Console IP
+  shell: grep "remote host" /opt/{{ Instance_Name }}/hc1/domain/configuration/host.xml | cut -d':' -f2 | awk '{print $1}' | sed s"/}//g;" | sed 's/^/"/g;'
+  register: DC_IP
+- debug:
+  var: DC_IP.stdout
+
+- name: Profile
+  shell: grep "<profile name" /opt/{{ Instance_Name }}/dc/domain/configuration/domain.xml | cut -d= -f2 | sed s'/>//g; s/"//g;'
+  register: profile
+- debug:
+  var: profile.stdout
+
+- name: Proxy List
+  shell: grep "solartis.modcluster.proxylist" /opt/{{ Instance_Name }}/dc/domain/configuration/domain.xml | tail -1 | cut -d= -f3 | sed s'/>//g; s/\///g'
+  register: Proxy_List
+- debug:
+  var: Proxy_List.stdout
+
+- name: Port Number
+  shell: grep "port-offset" /opt/{{ Instance_Name }}/hc1/domain/configuration/host.xml | cut -d= -f2 | sed s'/>//g; s/\///g; s/"//g' | sort -n | tail -1
+  register: port
+
+- name: New Port Number
+  set_fact: Port_Number={{ (port.stdout | int) + 100 }}
+- debug:
+  msg: "{{ Port_Number }}"
+
+- name: Multicast Address
+  shell: grep "jboss.default.multicast.address" /opt/{{ Instance_Name }}/dc/domain/configuration/domain.xml | tail -1 | cut -d= -f3 | sed s'/>//g; s/\///g; s/"//g;'
+  register: Multicast_Address
+- debug:
+  var: Multicast_Address.stdout
+
+- name: Splitting Multicast Address
+  set_fact: octet={{ Multicast_Address.stdout.split('.')[3] | int + 1 }}
+- debug: var=octet
+
+- name: New Multicast Address
+  set_fact: new_ip="{{ Multicast_Address.stdout | regex_replace('(^.*\.).*$', '\\1') }}{{ octet }}"
+- debug: var=new_ip
+
+- name: HC1 Name
+  shell: grep "<host name=" /opt/{{ Instance_Name }}/hc1/domain/configuration/host.xml | cut -d= -f2 | awk '{print$1}' | sed s'/"//g;'
+  register: hc_name
+- debug:
+  var: hc_name.stdout
+
+- name: LB Group
+  set_fact: Lbgroup="{{ (( Loadbalancer | regex_replace('lb$','')) | upper) }}"
+- debug: var=Lbgroup
+
+- name: TIER_Name
+  set_fact: TIER_NAME="{{ ( profile.stdout | regex_replace('^solartis-','')) }}"
+- debug: var=TIER_NAME
+
+- name: JWS_Log_Format
+  set_fact: Log_Format="{{ ( Server_Group | regex_replace('^V[0-9]_[0-9]','')) }}"
+- debug: var=Log_Format

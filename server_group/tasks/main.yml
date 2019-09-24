@@ -1,0 +1,6 @@
+---
+# tasks file for server_group
+- include: Gathering_details.yml
+- include: Path_Creation.yml
+- include: Server_Group.yml
+...

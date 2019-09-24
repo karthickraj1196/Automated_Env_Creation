@@ -1,0 +1,89 @@
+--- 
+- name: Server_Group Creation
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c --controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command="/server-group={{ Server_Group }}:add(profile={{ profile.stdout }},socket-binding-group={{ socket.stdout }})"
+
+- name: JVM Creation
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command="/server-group={{ Server_Group }}/jvm={{ Server_Group }}:add(heap-size={{ Heap_size }},max-heap-size={{ Heap_size }})"
+
+- name: Time_Out Configuration
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command="/server-group={{ Server_Group }}/system-property=jboss.as.management.blocking.timeout:add(value=3000)"
+
+- name: Configuring group.name
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command="/server-group={{ Server_Group }}/system-property=group.name:add(value={{ Groupname }})"
+
+- name: Configuring Proxy_List
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command="/server-group={{ Server_Group }}/system-property=solartis.modcluster.proxylist:add(value={{ Proxy_List.stdout }})"
+
+- name: Configuring LoadBalancer
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command="/server-group={{ Server_Group }}/system-property=solartis.modcluster.balancer:add(value={{ Loadbalancer }})"
+
+- name: Configuring Balancer Group
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command="/server-group={{ Server_Group }}/system-property=solartis.modcluster.lbgroup:add(value={{ Lbgroup }})"
+
+- name: Configuring Multicast Address
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command="/server-group={{ Server_Group }}/system-property=jboss.default.multicast.address:add(value={{ new_ip }})"
+
+- name: Creating Nodename
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command="/host={{ hc_name.stdout }}/server-config={{ Nodename }}:add(group={{ Server_Group }},auto-start=false,socket-binding-port-offset={{ Port_Number }})"
+
+- name: JVM options
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command="/host={{ hc_name.stdout }}/server-config={{ Nodename }}/jvm={{ Server_Group }}:add(debug-enabled=false)"
+
+- name: JVM options_1
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command="/host={{ hc_name.stdout }}/server-config={{ Nodename }}/jvm={{ Server_Group }}:add-jvm-option(jvm-option=-server)"
+
+- name: JVM options_2
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command="/host={{ hc_name.stdout }}/server-config={{ Nodename }}/jvm={{ Server_Group }}:add-jvm-option(jvm-option=-XX:+CMSClassUnloadingEnabled)"
+
+- name: JVM options_3
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command='/host={{ hc_name.stdout }}/server-config={{ Nodename }}/jvm={{ Server_Group }}:add-jvm-option(jvm-option="-Dsun.rmi.dgc.server.gcInterval=180000")'
+
+- name: JVM options_4
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command="/host={{ hc_name.stdout }}/server-config={{ Nodename }}/jvm={{ Server_Group }}:add-jvm-option(jvm-option=-XX:+UseConcMarkSweepGC)"
+
+- name: JVM options_5
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command='/host={{ hc_name.stdout }}/server-config={{ Nodename }}/jvm={{ Server_Group }}:add-jvm-option(jvm-option="-XX:CMSInitiatingOccupancyFraction=60")'
+
+- name: JVM options_6
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command="/host={{ hc_name.stdout }}/server-config={{ Nodename }}/jvm={{ Server_Group }}:add-jvm-option(jvm-option=-verbose:gc)"
+
+- name: JVM options_7
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command="/host={{ hc_name.stdout }}/server-config={{ Nodename }}/jvm={{ Server_Group }}:add-jvm-option(jvm-option=-XX:+PrintGCDetails)"
+
+- name: JVM options_8
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command="/host={{ hc_name.stdout }}/server-config={{ Nodename }}/jvm={{ Server_Group }}:add-jvm-option(jvm-option=-XX:+PrintGCDateStamps)"
+
+- name: JVM options_9
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command="/host={{ hc_name.stdout }}/server-config={{ Nodename }}/jvm={{ Server_Group }}:add-jvm-option(jvm-option=-XX:+HeapDumpOnOutOfMemoryError)"
+
+- name: JVM options_10
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command='/host={{ hc_name.stdout }}/server-config={{ Nodename }}/jvm={{ Server_Group }}:add-jvm-option(jvm-option="-XX:MetaspaceSize=512M")'
+
+- name: JVM options_11
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command='/host={{ hc_name.stdout }}/server-config={{ Nodename }}/jvm={{ Server_Group }}:add-jvm-option(jvm-option="-XX:MaxMetaspaceSize=512M")'
+
+- name: JVM options_12
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command="/host={{ hc_name.stdout }}/server-config={{ Nodename }}/jvm={{ Server_Group }}:add-jvm-option(jvm-option=-Xloggc:/opt/{{ Instance_Name }}/hc1/domain/gclog/{{ Nodename }}_gc_%t.log)"
+
+- name: JVM options_13
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command='/host={{ hc_name.stdout }}/server-config={{ Nodename }}/jvm={{ Server_Group }}:add-jvm-option(jvm-option="-XX:HeapDumpPath=/opt/{{ Instance_Name }}/hc1/domain/heapdump/{{ Nodename }}")'
+
+- name: JVM options_14
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command='/host={{ hc_name.stdout }}/server-config={{ Nodename }}/jvm={{ Server_Group }}:add-jvm-option(jvm-option="-javaagent:/opt/Solartis_Monitoring/Zorka_Agent/{{ Nodename }}/agent/zorka.jar=/opt/Solartis_Monitoring/Zorka_Agent/{{ Nodename }}/agent")'
+
+- name: JVM options_15
+  shell: /opt/{{ Instance_Name }}/dc/bin/jboss-cli.sh -c controller={{ DC_IP.stdout }}:19999 --user=ansibleusr --password=greetings@123 --command="/host={{ hc_name.stdout }}/server-config={{ Nodename }}/system-property=zorka.home.dir:add(value=/opt/Solartis_Monitoring/Zorka_Agent/{{ Nodename }}/agent,boot-time=true)"
+
+#- name: Changing Permission for writing acces_conf file
+#  shell: chmod 777 /opt/{{ Instance_Name }}/jws/httpd/solartis.conf/{{ TIER_NAME }}.conf.d/
+
+- name: Access_conf configuration
+  template:
+    src: access.conf.j2
+    dest: /opt/{{ Instance_Name }}/jws/httpd/solartis.conf/{{ TIER_NAME }}.conf.d/{{ Log_Format|lower }}_access.conf
+
+- name: Host entry addition
+  shell: echo {{ JWS_IP }}  {{ Domain_Name }} >> /etc/hosts
+
+- name: JWS Restart
+  shell: systemctl restart {{ JWS_Service }}
