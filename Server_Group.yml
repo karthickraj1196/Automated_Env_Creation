@@ -1,0 +1,12 @@
+---
+- name: Main yaml which triggers the role Server_Group
+  hosts: 10.203.34.64
+#  remote_user: ansible
+  become: yes
+  become_method: sudo
+  become_user: root
+  gather_facts: yes
+  tasks:
+  - name: Configuring Server Group
+    include_role:
+      name: server_group
